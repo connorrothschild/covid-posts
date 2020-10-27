@@ -11,7 +11,7 @@ library(reactable)
 df <- readxl::read_excel(here::here('data/postsTopicsRoles1019.xlsx')) %>%
     mutate(Date = lubridate::as_date(Date),
            # consolidate country & geospecific
-           Country = ifelse(is.na(Country), GeoSpecific, Country),
+           GeoSpecific = ifelse(is.na(GeoSpecific), Geo, GeoSpecific),
            Country = ifelse(Country == 'United States of America', 'USA', Country),
            Author = str_replace(Author, ", NA", ""),
            Author = sub("(\\w+),\\s(\\w+)","\\2 \\1", Author),
@@ -27,30 +27,46 @@ ui <- shinyUI(fluidPage(
     
     fluidRow(
         column(
-            4,
+            3,
             div(h4(
                 'A collection of posts by the #rstats community'
             )),
             br(),
-            br(),
-            selectInput(
-                inputId = 'Role',
-                label = 'Filter by Job Title',
-                choices = c("All", df$Role[!is.na(df$Role)]),
-                selected = "All"
-            ),
-            selectInput(
-                inputId = 'Country',
-                label = 'Filter by Geography',
-                choices = c("All", df$Country[!is.na(df$Country)]),
-                selected = "All"
-            ),
-            selectInput(
-                inputId = 'Topic',
-                label = 'Filter by Topic',
-                choices = c("All", df$Topic[!is.na(df$Topic)]),
-                selected = "All"
-            ),
+            tabsetPanel(
+                type = "tabs",
+                tabPanel(
+                    "Author Info",
+                    br(),
+                    selectInput(
+                        inputId = 'Role',
+                        label = 'Filter by Job Role',
+                        choices = c("All", sort(df$Role[!is.na(df$Role)])),
+                        selected = "All"
+                    ),
+                    selectInput(
+                        inputId = 'CoreRole',
+                        label = 'Filter by Place of Employment',
+                        choices = c("All", sort(df$CoreRole[!is.na(df$CoreRole)])),
+                        selected = "All"
+                    )
+                    ),
+                tabPanel(
+                    "Post Info",
+                    br(),
+                    selectInput(
+                        inputId = 'Topic',
+                        label = 'Filter by Topic',
+                        choices = c("All", sort(df$Topic[!is.na(df$Topic)])),
+                        selected = "All"
+                    ),
+                    selectInput(
+                        inputId = 'GeoSpecific',
+                        label = 'Filter by Country of Focus',
+                        choices = c("All", sort(df$GeoSpecific[!is.na(df$GeoSpecific)])),
+                        selected = "All"
+                    )
+                )
+                ),
             dateRangeInput(
                 "dateRange",
                 "Filter by Date",
@@ -61,10 +77,19 @@ ui <- shinyUI(fluidPage(
             ),
             
             htmlOutput('matchText'),
+            br(),
+            actionButton("resetInputs", "Remove all filters")
             
         ),
         column(
-            8,
+            9,
+            p(
+                HTML(
+                paste0("You can further filter those ", 
+                       textOutput("nrow", inline = TRUE), 
+                       " posts below:")
+                )
+              ),
             conditionalPanel(condition = 'output.nrow != "0"',
                              reactableOutput("table")),
         )
@@ -87,14 +112,33 @@ ui <- shinyUI(fluidPage(
 ))
 
 server <- function(input, output, session) {
+    
+    inputIds <- c('CoreRole', 'Role', 'Topic', 'GeoSpecific')
+    observeEvent(input$resetInputs, {
+        for (id in inputIds) {
+            updateSelectInput(session = session,
+                              inputId = id,
+                              selected = 'All'
+                              )
+            updateDateRangeInput(session = session,
+                                 inputId = 'dateRange',
+                                 start = min(df$Date) - 1,
+                                 end   = max(df$Date) + 1)
+        }
+    })
+    
     chosen_dataset <- reactive({
         if (input$Role != "All") {
             df <- df %>%
                 filter(Role == input$Role)
         }
-        if (input$Country != "All") {
+        if (input$CoreRole != "All") {
             df <- df %>%
-                filter(Country == input$Country)
+                filter(CoreRole == input$CoreRole)
+        }
+        if (input$GeoSpecific != "All") {
+            df <- df %>%
+                filter(GeoSpecific == input$GeoSpecific)
         }
         if (input$Topic != "All") {
             df <- df %>%
@@ -138,7 +182,7 @@ server <- function(input, output, session) {
             background = "white",
             zIndex = 1,
             fontSize = '14px',
-            borderRight = '1px solid #f5f5f5'
+            borderRight = '1px solid white'
         )
     
     output$table <- renderReactable({
@@ -174,15 +218,15 @@ server <- function(input, output, session) {
             columns = list(
                 URL = colDef(show = FALSE),
                 Email = colDef(show = FALSE),
-                GeoSpecific = colDef(show = FALSE),
-                Country = colDef(name = 'Location'),
+                Country = colDef(show = FALSE),
+                GeoSpecific = colDef(name = 'Country'),
                 Date = colDef(format = colFormat(date = TRUE)),
                 Topic = colDef(minWidth = 110),
-                Data = colDef(name = "Has Data?"),
-                Code = colDef(name = "Has Code?"),
-                Math = colDef(name = "Has Math?"),
-                Author = colDef(minWidth = 200),
-                Role = colDef(name = 'Job Title'),
+                Data = colDef(name = "Data?", width = 60),
+                Code = colDef(name = "Code?", width = 60),
+                Math = colDef(name = "Math?", width = 60),
+                Author = colDef(minWidth = 150),
+                Role = colDef(name = 'Job Role'),
                 CoreRole = colDef(name = "Employment", minWidth = 120),
                 Title = colDef(
                     name = "Post Title",

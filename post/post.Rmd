@@ -25,9 +25,9 @@ set_cr_theme()
 
 Our goal here is to help bloggers who want to analyze COVID-19 data by unleashing R and the resources of its community by being able to researching such posts (here, called "covidRposts). 
 
-Having so far found 423 covidRposts in English, we have published a Shiny app for them. It lets users find the names of the 231 bloggers who wrote those covidRposts, their roles, and country. The app also lets users interactively search the collection of posts by primary topic, title, date, and whether the post used a particular mathematical technique and which source of data. To learn more about the evolution of this data set, one of the authors has published nine articles on Medium. The most recent Medium article links to the series https://medium.com/@rees_32356/my-previous-nine-articles-have-each-focused-on-a-different-finding-from-an-ever-growing-set-of-e774fb608dbd 
+Having so far found 423 covidRposts in English, we have published a Shiny app for them. It lets users find the names of the 231 bloggers who wrote those covidRposts, their roles, and country. The app also lets users interactively search the collection of posts by primary topic, title, date, and whether the post used a particular mathematical technique and which source of data. To learn more about the evolution of this data set, one of the authors (Rees) has published nine articles on Medium. The most recent [Medium article](https://medium.com/@rees_32356/my-previous-nine-articles-have-each-focused-on-a-different-finding-from-an-ever-growing-set-of-e774fb608dbd ) links to the series.
 
-If anyone has corrections to the data set or knows other blog posts that ought to be included in it, please write Rees (at) ReesMorrison (dot) com. The data set analyzed in this post is available on GitHub [ ]. 
+If anyone has corrections to the data set or knows other blog posts that ought to be included in it, please write Rees (at) ReesMorrison (dot) com. The data set analyzed in this post is available on [GitHub](https://github.com/connorrothschild/covid-posts). 
 
 The remainder of this post highlights some of the findings from the data set of COVID-19posts. The first plot displays the pace of blog postings. It shows the week of the year on the x-axis, starting in early-February, and the number of posts on the y-axis. As the pandemic has ground on and on, fewer bloggers have seized upon the data it has generated.
 
@@ -152,190 +152,14 @@ textDF.Data <- postsConnor %>% # 592 obs. of 3 vars June 20
  mutate(data = str_extract_all(postsConnor$text, pattern = "(?<=\\&Data).*?(?=&&)")) %>%
  unnest()
 
-# textDF.Data$data <- stringr::str_trim(string = textDF.Data$data, side = "both")
-textDF.Data$data <- str_squish(string = textDF.Data$data)
-
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "ACAPS$", replacement = "Assessment Capacities Project (ACAPS)")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "Apple Mobility Data", replacement = "Apple Mobility")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^Apple.*$", replacement = "Apple Mobility")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^Assessment.*$", replacement = "Assessment Capacities Project (ACAPS)")
-textDF.Data$data <-
- ifelse(
- str_detect(textDF.Data$data, pattern = "Labor Statistics"),
- "U.S. Bureau of Labor Statistics",
- textDF.Data$data
- )
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "corona virus package", replacement = "coronavirus package")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^Covid Tracking.*$", replacement = "COVID Tracking Project")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "covidtracking.com", replacement = "COVID Tracking Project")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "COVID Tracking project", replacement = "COVID Tracking Project")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "COVID-19 package",
- replacement = "COVID-19 package")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "COVID-19R",
- replacement = "COVID-19 package")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "Centers",
- replacement = "Centre")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "data.gouv.fr/fr/datasets/
-",
-replacement = "data.gouv.fr")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "gouv.fr",
- replacement = "data.gouv.fr")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^European Centre.*$", replacement = "European Centre for Disease Control (ECDC)")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "European Center for Disease Control", replacement = "European Centre for Disease Control (ECDC)")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^ECDC.*$", replacement = "European Centre for Disease Control (ECDC)")
-textDF.Data$data <- str_replace(
- textDF.Data$data,
- pattern = "
-European Centre for Disease Control (ECDC) (ECDC)",
-replacement = "European Centre for Disease Control (ECDC)"
-)
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "french site data.data.gouv.fr",
- replacement = "data.gouv.fr")
-textDF.Data$data <-
- str_remove(textDF.Data$data, pattern = "Geocodes from ")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^Google Mob.*$", replacement = "Google Mobility")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "Google mobility", replacement = "Google Mobility")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = 'Google \\"COVID-19 Community Mobility Reports\\"', replacement = "Google Mobility")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^Hopkins.*$", replacement = "Johns Hopkins Univ.")
-textDF.Data$data <-
- str_remove(string = textDF.Data$data, pattern = "https\\:")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^Human Mortality.*$", replacement = "Human Mortality Database")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "I n stituto", replacement = "Instituto")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^Japan National.*$", replacement = "Japan National Land Numeric Information")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "Johns Hopkins$", replacement = "Johns Hopkins Univ.")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "microsimulation", replacement = "Simulation")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^Mobility Trends.*$", replacement = "Apple Mobility")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^New York T.*$", replacement = "New York Times")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "Not sourced", replacement = "No data")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "Opentable",
- replacement = "OpenTable")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "our world in data",
- replacement = "Our World in Data")
-textDF.Data$data <-
- str_remove(string = textDF.Data$data, pattern = "regression, log-linear")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "^The Guard.*$", replacement = "The Guardian (Australia)")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "the united states project",
- replacement = "United States Project")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "simulation", replacement = "Simulation")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "S imulation", replacement = "Simulation")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "T ennessee", replacement = "Tennessee")
-textDF.Data$data <-
- str_replace(textDF.Data$data, pattern = "U nited S tates P roject", replacement = "United States Project")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "US Census",
- replacement = "U.S. Census Bureau")
-textDF.Data$data <-
- ifelse(
- str_detect(textDF.Data$data, pattern = "Census"),
- "U.S. Census Bureau",
- textDF.Data$data
- )
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "Wikipedia: Case statistics\\)",
- replacement = "Wikipedia")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "Wikipeida",
- replacement = "Wikipedia")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "W ikipeida",
- replacement = "Wikipedia")
-textDF.Data$data <-
- ifelse(str_detect(textDF.Data$data, pattern = "Wikipedia"),
- "Wikipedia",
- textDF.Data$data)
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "W ikipedia",
- replacement = "Wikipedia")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "US Census Bureau",
- replacement = "U.S. Census Bureau")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "Worldbank",
- replacement = "World Bank")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "WorldBank",
- replacement = "World Bank")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "World o meters",
- replacement = "Worldometers")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "W orldometers",
- replacement = "Worldometers")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "^World Pop.*$",
- replacement = "World Population Review (WPR)")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "WorldPop",
- replacement = "World Population Review (WPR)")
-textDF.Data$data <-
- str_replace(string = textDF.Data$data,
- pattern = "www.insee.fr",
- replacement = "INSEE")
-textDF.Data$data <-
- str_remove(string = textDF.Data$data, pattern = "www\\.")
+source(here::here('post/clean_text.R'))
 
 # group and count
 textDF.Data.gat <-
  textDF.Data %>% group_by(data) %>% summarise(Count = n()) %>%
  arrange(desc(Count)) %>% ungroup() #46 obs; 52 7/8; 137 10/19
 ```
+
 ```{css}
 .header {
   text-transform: uppercase;
@@ -349,6 +173,12 @@ textDF.Data.gat <-
 ```{r dataTable}
 library(reactable)
 
+# group and count
+textDF.Data.gat <-
+  textDF.Data %>% filter(data %nin% c("Simulation", "No data")) %>%
+  group_by(data) %>% summarise(Count = n()) %>%
+  arrange(desc(Count)) %>% ungroup()
+
 reactable(
   textDF.Data.gat,
   compact = TRUE,
@@ -358,17 +188,18 @@ reactable(
   columns = list(data = colDef(name = 'Data Source'))
 )
 
-# group and count
-textDF.Data.gat <- textDF.Data %>% filter(data %nin% c("Simulation", "No data")) %>%
- group_by(data) %>% summarise(Count = n()) %>%
- arrange(desc(Count)) %>% ungroup() 
-
 ggplot(subset(textDF.Data.gat, Count > 3), aes(x = reorder(data, Count), y = Count)) +
- geom_col(width = 0.7) +
- labs(x = NULL, y = "Number of Blogs Using Data", title = "Blog Posts that Use R to Analyze Covid-19 Data", subtitle = "Sources of data used more than three times, as of Oct. 19, 2020", caption = "Source: Rees Morrison compilation of COVID-19 blog posts that use R") +
- scale_y_continuous(expand = c(0,0)) +
- scale_x_discrete(expand = c(0,0)) +
- coord_flip()
+  geom_col(width = 0.7) +
+  labs(
+    x = NULL,
+    y = "Number of Blogs Using Data",
+    title = "Blog Posts that Use R to Analyze Covid-19 Data",
+    subtitle = "Sources of data used more than three times, as of Oct. 19, 2020",
+    caption = "Source: Rees Morrison compilation of COVID-19 blog posts that use R"
+  ) +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_discrete(expand = c(0, 0)) +
+  coord_flip()
 ```
 
 Bloggers and other analysts would like a thumbnail summary of blogs. Assigning each blog post a primary topic introduces a fair amount of subjectivity, to be sure, but the hope is that these broad topics will help researchers find content and colleagues who share similar interests. Here, a heat map shows nine categories that the 160+ blogs address as their primary topic. Epidemiology leads the way, as might be expected, but also quite a few posts seem to take the Covid data as an opportunity to show off a capability of the R programming language ("DataViz", "R Program" and "Statistics").

@@ -25,3 +25,7 @@ body {
 hr {
   border-top: 1px solid black;
 }
+
+div:focus {
+  outline: none;
+}
