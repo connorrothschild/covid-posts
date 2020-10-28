@@ -8,7 +8,10 @@ output: html_document
 ```{r setup, include=FALSE, echo = FALSE}
 knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
-                      warning = FALSE)
+                      warning = FALSE,
+                      fig.fullwidth = TRUE,
+                      out.width = "100%",
+                      dpi = 300)
 
 library(tidyverse) # for a collection of frequently used packages that follow a similar coding approach
 library(funModeling) # to compare vectors against each other, to find overlaps and inconsistencies
@@ -42,22 +45,17 @@ month_numeric <- lubridate::yday(month) / 365 * 52 + 1
 month_label <- lubridate::month(month, label = TRUE)
 
 ggplot(posts, aes(x = Week)) +
-  geom_histogram(stat = "count",
-                 # fill = "firebrick",
-                 color = "white",
-                 width = 0.7,) +
+  geom_histogram(stat = "count") +
   labs(
     x = element_blank(),
     y = "Number of Blog Posts",
-    title = "Blog Posts that Use R to Analyze Covid-19 Data",
-    subtitle = "Posts in English only, as of Oct. 20, 2020",
+    title = "Counts of Blog Posts that Use R to Analyze COVID-19 Data",
+    subtitle = "English only, as of Oct. 20, 2020",
     caption = "Source: Rees Morrison compilation of COVID-19 blog posts that use R"
   ) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(breaks = month_numeric,
                      labels = month_label)
-
-# ggsave("C:/Users/Rees Morrison/Documents/R/Projects/CLIENTS/COVID-19/MyPosts/Weekly.png", height = 6.5, width = 6.5, units = "in", dpi = 600)
 ```
 
 Some bloggers have been prolific; many more have been one and done. For the 23 bloggers who have published at least four covidRposts, the plot below shows their names and their posts by week of 2020. For an example of how to read the plot, Tim Churches, at the bottom of the reverse alphabetical y-axis, has published a total of six posts, but none after early April. Note that the text boxes with the months are somewhat approximately located on the plot.
@@ -75,7 +73,6 @@ freqBloggers <- prolific$LastName[1:13]
 graphProlific <-
   posts %>% select(LastName, Week, Role) %>% 
   dplyr::filter(LastName %in% freqBloggers)
-# graphProlific$Role <- str_replace(graphProlific$Role, pattern = "wrote Nancy", replacement = "Unknown")
 
 graphProlific %>% 
   mutate(LastName = fct_reorder(LastName, -desc(Role))) %>%
@@ -94,16 +91,13 @@ graphProlific %>%
                      labels = month_label) +
   theme(legend.position = "bottom",
         legend.direction = 'horizontal')
-
-# ggsave("C:/Users/Rees Morrison/Documents/R/Projects/CLIENTS/COVID-19/MyPosts/prolific.png", height = 6.5, width = 6.5, units = "in", dpi = 600)
 ```
 
 We should explain "Role" a bit more. Bloggers, other than professors, describe their work-day roles in a variety of ways. One of the authors (Rees) standardized the multitude of terms and descriptions, but it is quite possible that this effort misrepresented what some of these bloggers do for a living. We welcome corrections. 
 
-Going further, the next plot assigned the bloggers into the broader role categories. Those broader categories are represented as columns in the following chart, with the segments showing the more granular roles. The labels indicate the number of posts in the data set for each role within a role category.
+Going further, the next plot assigned the bloggers into the broader role categories. Those broader categories are represented as columns in the following chart.
 
 ```{r authorVer2, echo = FALSE, warnings = FALSE}
-# read in information about roles, country, geo, etc.
 roles <-
   read_excel(here::here("data/NamesRolesEmailsTwo.Ver1.xls"), trim_ws = TRUE)
 
@@ -113,51 +107,40 @@ roleSum <-
   posts %>% group_by(CoreRole, Role) %>% summarise(NumPosts = length(Author)) %>%
   arrange(desc(NumPosts)) %>% ungroup() #30
 
-ggplot(posts, aes(x = CoreRole, fill = Role)) +
-  geom_bar(stat = "count", width = 0.7) +
+posts %>% 
+  group_by(CoreRole) %>% 
+  tally() %>% 
+  filter(!is.na(CoreRole)) %>% 
+  mutate(CoreRole = fct_reorder(CoreRole, -n)) %>% 
+ggplot(aes(x = CoreRole, y = n)) +
+  geom_col() +
   labs(
-    x = "Roles of Bloggers",
+    x = element_blank(),
     y = "Number of Blog Posts",
-    title = "Blog Posts that Use R to Analyze Covid-19 Data",
-    subtitle = "Role (position) of those who posted, as of Oct. 19, 2020",
+    title = "Role of Authors that Use R to Analyze COVID-19 Data",
+    subtitle = "As of Oct. 20, 2020",
     caption = "Source: Rees Morrison compilation of COVID-19 blog posts that use R"
   ) +
   scale_y_continuous(expand = c(0, 0)) +
-  geom_text(
-    stat = "count",
-    aes(label = ..count..),
-    color = "black",
-    group = "Role",
-    position = "stack",
-    hjust = 1
-  ) +
-  scale_x_discrete(expand = c(0, 0)) +
   theme(legend.position = "bottom",
         legend.direction = 'horizontal')
-
-# ggsave("C:/Users/Rees Morrison/Documents/R/Projects/CLIENTS/COVID-19/MyPosts/Roles.png", height = 6.5, width = 6.5, units = "in", dpi = 600)
 ```
 
-The more data sources the R community knows for purposes of exploring the coronavirus pandemic, the richer will be the insights. Data mashups can shed new light on an issue; inconsistencies between data sets can yield improvements; or better indices can be constructed. For that reason, one of the authors (Rees) extracted from the collection of blog posts information about their data sources.
+The more data sources the R community knows for purposes of exploring the coronavirus pandemic, the richer will be the insights. Combining different datasets can shed new light on an issue; inconsistencies between data sets can yield improvements; or better indices can be constructed. For that reason, one of the authors (Rees) extracted from the collection of blog posts information about their data sources.
 
-For the most part, the bloggers identified the data source they drew on for their analysis. However, standardizing that range of nearly 140 data sources was a challenge
+For the most part, bloggers identified the data source they drew on for their analysis. However, standardizing that range of nearly 140 data sources was a challenge.
 
-One takeaway can't help but notice the absence of the U.S. CDC agency. The other takeaway commends the dominance of Johns Hopkins, who early, comprehensively and consistently has set the standard for COVID-19 data collection and dissemination to the public.
+Notably, data from the US CDC is lacking. On the other hand is Johns Hopkins University, who early, comprehensively and consistently has set the standard for COVID-19 data collection and dissemination to the public.
 
 ```{r datasourcesVer2}
 postsConnor <-
  read.csv(here::here("data/postsOct20423allText.csv")) # this has 442 obs as mistakes
 
-textDF.Data <- postsConnor %>% # 592 obs. of 3 vars June 20
+textDF_data <- postsConnor %>% # 592 obs. of 3 vars June 20
  mutate(data = str_extract_all(postsConnor$text, pattern = "(?<=\\&Data).*?(?=&&)")) %>%
  unnest()
 
 source(here::here('post/clean_text.R'))
-
-# group and count
-textDF.Data.gat <-
- textDF.Data %>% group_by(data) %>% summarise(Count = n()) %>%
- arrange(desc(Count)) %>% ungroup() #46 obs; 52 7/8; 137 10/19
 ```
 
 ```{css}
@@ -169,32 +152,20 @@ textDF.Data.gat <-
 }
 ```
 
-
 ```{r dataTable}
-library(reactable)
-
-# group and count
-textDF.Data.gat <-
-  textDF.Data %>% filter(data %nin% c("Simulation", "No data")) %>%
+textDF_data_gat <-
+  textDF_data %>% filter(data %nin% c("Simulation", "No data")) %>%
   group_by(data) %>% summarise(Count = n()) %>%
-  arrange(desc(Count)) %>% ungroup()
+  arrange(desc(Count)) %>% ungroup() %>% 
+  filter(!is.na(data))
 
-reactable(
-  textDF.Data.gat,
-  compact = TRUE,
-  striped = TRUE,
-  defaultColDef = colDef(headerClass = "header",
-                         na = "–"),
-  columns = list(data = colDef(name = 'Data Source'))
-)
-
-ggplot(subset(textDF.Data.gat, Count > 3), aes(x = reorder(data, Count), y = Count)) +
-  geom_col(width = 0.7) +
+ggplot(subset(textDF_data_gat, Count > 3), aes(x = reorder(data, Count), y = Count)) +
+  geom_col() +
   labs(
     x = NULL,
-    y = "Number of Blogs Using Data",
-    title = "Blog Posts that Use R to Analyze Covid-19 Data",
-    subtitle = "Sources of data used more than three times, as of Oct. 19, 2020",
+    y = "Number of Posts Using Data",
+    title = "Most Common Data Sources for COVID-19 Blog Posts",
+    subtitle = "Including data sources used more than three times, as of Oct. 20, 2020",
     caption = "Source: Rees Morrison compilation of COVID-19 blog posts that use R"
   ) +
   scale_y_continuous(expand = c(0, 0)) +
@@ -202,26 +173,105 @@ ggplot(subset(textDF.Data.gat, Count > 3), aes(x = reorder(data, Count), y = Cou
   coord_flip()
 ```
 
+Below, you can look at *all* data sources and how often they were referenced in COVID-19 blog posts.
+
+```{r}
+library(reactable)
+
+reactable(
+  textDF_data_gat,
+  compact = TRUE,
+  striped = TRUE,
+  defaultColDef = colDef(headerClass = "header",
+                         na = "–"),
+  columns = list(data = colDef(name = 'Data Source'))
+)
+```
+
 Bloggers and other analysts would like a thumbnail summary of blogs. Assigning each blog post a primary topic introduces a fair amount of subjectivity, to be sure, but the hope is that these broad topics will help researchers find content and colleagues who share similar interests. Here, a heat map shows nine categories that the 160+ blogs address as their primary topic. Epidemiology leads the way, as might be expected, but also quite a few posts seem to take the Covid data as an opportunity to show off a capability of the R programming language ("DataViz", "R Program" and "Statistics").
 
 ```{r topicsVer2}
 # remove NAs and gather
-topics.gat <- posts %>% dplyr::filter(CoreRole != "NA" & Country != "NA") %>% group_by(CoreRole, Topic) %>% summarise(Count = n()) %>% ungroup() # 41 obs
+topics <-
+  posts %>% dplyr::filter(CoreRole != "NA" &
+                            Country != "NA") %>% 
+  group_by(CoreRole, Topic) %>% 
+  summarise(Count = n()) %>%
+  ungroup() # 41 obs
 
-# 423-sum(topics.gat$Count) #15
+# reorder according to counts
+topics$Topic <- ordered(
+  topics$Topic,
+  levels = topics %>% group_by(Topic) %>% summarise(n = sum(Count)) %>%
+    arrange(n) %>% distinct() %>% pull(Topic)
+)
 
-ggplot(topics.gat, aes(x = Topic, y = CoreRole, fill = Count)) +
- geom_tile() +
- scale_fill_gradient2(midpoint = 6, mid = "grey", limits = c(0,12)) +
- #scale_fill_gradientn(colours = c("darkred", "orange", "yellow", "white")) +
- # scale_fill_gradientn(colours = scales::muted(rainbow(5))) +
- # scale_fill_gradientn(colours = rainbow(5)) +
- labs(x = "Primary Topic", y = NULL, title = "Blog Posts that Use R to Analyze Covid-19 Data", subtitle = "Primary topics and sector of blogger (389 posts, 34 unknowns excluded)", caption = "R Morrison compilation of COVID-19 blog posts that use R", fill = element_blank()) +
- theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
- theme(legend.position = "bottom",
- legend.direction = 'horizontal')
+topics$CoreRole <- ordered(
+  topics$CoreRole,
+  levels = topics %>% group_by(CoreRole) %>% summarise(n = sum(Count)) %>%
+    arrange(desc(n)) %>% distinct() %>% pull(CoreRole)
+)
 
-# ggsave("C:/Users/Rees Morrison/Documents/R/Projects/CLIENTS/COVID-19/MyPosts/RoleCtryHeatmap.png", height = 6.5, width = 6.5, units = "in", dpi = 600)
+# add a "row" column which will be the y position in the plot
+topics <-
+  topics %>% mutate(row = group_indices(topics, .dots = c('Topic')))
 
+# add a "col" column which will be the x position in the plot
+topics <-
+  topics %>% mutate(col = group_indices(topics, .dots = c('CoreRole')))
+
+# get character vector of variable names for the x axis. the order is important, hence arrange(col)!
+vars_x_axis <-
+  c(topics %>% arrange(col) %>% select(CoreRole) %>% distinct())$CoreRole
+# get character vector of observation names for the y axis. again, the order is important but "topics" is already ordered
+names_y_axis <-
+  c(topics %>% arrange(row) %>% select(Topic) %>% distinct())$Topic
+
+# pal <- wesanderson::wes_palette('IsleofDogs1', 5, type = "discrete")
+
+ggplot(topics,
+       aes(
+         x = factor(col),
+         y = factor(row),
+         color = Topic,
+         alpha = Count,
+         size = Count
+       )) +
+  geom_label(
+    aes(label = Count,
+        x = col + 0.3),
+    alpha = 1,
+    size = 4,
+    color = "black",
+    label.size = 0,
+    family = 'Lato'
+  ) +
+  geom_point() +
+  scale_size_area(max_size = 10) +
+  scale_alpha_continuous(range = c(0.5, 1)) +
+  # scale_color_manual(values = pal) +
+  scale_x_discrete(
+    breaks = 1:length(vars_x_axis),
+    labels = function(x)
+      str_wrap(vars_x_axis, width = 10)
+  ) +
+  scale_y_discrete(breaks = 1:length(names_y_axis), labels = names_y_axis) +
+  labs(title = 'Number of Posts by Topic and Employment Category',
+       x = element_blank(),
+       y = element_blank()) +
+  theme(
+    axis.line = element_blank(),
+    panel.border = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    legend.position = 'none',
+    text = element_text(colour = 'black',
+                        family = 'Lato'),
+    axis.text = element_text(size = 10.5),
+    title = element_text(size = 14),
+    plot.title.position = 'plot',
+    axis.ticks = element_blank()
+  )   
 ```
+
 
