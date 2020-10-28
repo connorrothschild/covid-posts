@@ -1,5 +1,3 @@
-## FIXME: Author should just be first name last name
-
 library(shiny)
 library(dplyr)
 library(purrr)
@@ -15,7 +13,8 @@ df <- readxl::read_excel(here::here('data/postsTopicsRoles1019.xlsx')) %>%
            Country = ifelse(Country == 'United States of America', 'USA', Country),
            Author = str_replace(Author, ", NA", ""),
            Author = sub("(\\w+),\\s(\\w+)","\\2 \\1", Author),
-           Author = ifelse(Author == 'NA', NA, Author))
+           Author = ifelse(Author == 'NA', NA, Author),
+           CoreRole = ifelse(CoreRole == "NotForProfit", "Nonprofit", CoreRole))
 
 ui <- shinyUI(fluidPage(
     tags$head(
