@@ -6,15 +6,30 @@ library(stringr)
 library(magrittr)
 library(reactable)
 
-df <- readxl::read_excel(here::here('data/postsTopicsRoles1019.xlsx')) %>%
-    mutate(Date = lubridate::as_date(Date),
-           # consolidate country & geospecific
-           GeoSpecific = ifelse(is.na(GeoSpecific), Geo, GeoSpecific),
-           Country = ifelse(Country == 'United States of America', 'USA', Country),
-           Author = str_replace(Author, ", NA", ""),
-           Author = sub("(\\w+),\\s(\\w+)","\\2 \\1", Author),
-           Author = ifelse(Author == 'NA', NA, Author),
-           CoreRole = ifelse(CoreRole == "NotForProfit", "Nonprofit", CoreRole))
+df <- readr::read_csv(here::here('data/oct29PostsData.csv')) %>%
+    mutate(
+        Date = lubridate::as_date(Date),
+        GeoSpecific = ifelse(is.na(GeoSpecific), Geo, GeoSpecific),
+        Country = ifelse(Country == 'United States of America', 'USA', Country),
+        Author = str_replace(Author, ", NA", ""),
+        Author = sub("(\\w+),\\s(\\w+)", "\\2 \\1", Author),
+        Author = ifelse(Author == 'NA', NA, Author),
+        CoreRole = ifelse(CoreRole == "NotForProfit", "Nonprofit", CoreRole),
+        Role = str_replace(
+            Role,
+            'Actuary|Architect|Government|MacroStrategist|PhD Student|Public Health|Lawyer|Educator',
+            'Other'
+        ),
+        Role = str_replace(Role,
+                           'Post Grad',
+                           'Post-Grad'),
+        Topic = str_replace(Topic,
+                            'CompSci',
+                            'Computer Science'),
+        Topic = str_replace(Topic,
+                            'DataViz',
+                            'Data Visualization')
+    )
 
 ui <- shinyUI(fluidPage(
     tags$head(
@@ -150,14 +165,10 @@ server <- function(input, output, session) {
         
         df <- df %>%
             select(-c(
-                Text,
                 LastName,
                 Week,
                 WeekYear,
-                PostName,
-                Region,
                 Geo,
-                GeoFocus
             )) %>%
             select(Title, Author, Date, everything())
         return(df)
